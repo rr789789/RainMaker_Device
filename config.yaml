@@ -1,0 +1,77 @@
+server:
+  url: "http://119.91.101.51:8080"
+  email: "test@example.com"
+  password: "qwer1234"
+
+local:
+  port: 8090
+
+devices:
+  - node_id: "SIM-SWITCH-001"
+    name: "Living Room Switch"
+    type: "esp.device.switch"
+    fw_version: "1.0.0"
+    sub_devices:
+      - name: "Switch"
+        type: "esp.device.switch"
+        primary: "Power"
+        params:
+          - name: "Power"
+            type: "esp.param.power"
+            data_type: "bool"
+            ui_type: "esp.ui.toggle"
+            properties: ["read", "write"]
+            default: false
+
+  - node_id: "SIM-LIGHT-002"
+    name: "Bedroom Light"
+    type: "esp.device.lightbulb"
+    fw_version: "1.0.0"
+    sub_devices:
+      - name: "Light"
+        type: "esp.device.lightbulb"
+        primary: "Power"
+        params:
+          - name: "Power"
+            type: "esp.param.power"
+            data_type: "bool"
+            ui_type: "esp.ui.toggle"
+            properties: ["read", "write"]
+            default: false
+          - name: "Brightness"
+            type: "esp.param.brightness"
+            data_type: "int"
+            ui_type: "esp.ui.slider"
+            properties: ["read", "write"]
+            bounds: {min: 0, max: 100, step: 1}
+            default: 50
+
+  - node_id: "SIM-THERMO-003"
+    name: "Thermostat"
+    type: "esp.device.thermostat"
+    fw_version: "1.0.0"
+    sub_devices:
+      - name: "Thermostat"
+        type: "esp.device.thermostat"
+        primary: "Power"
+        params:
+          - name: "Power"
+            type: "esp.param.power"
+            data_type: "bool"
+            ui_type: "esp.ui.toggle"
+            properties: ["read", "write"]
+            default: false
+          - name: "Temperature"
+            type: "esp.param.temperature"
+            data_type: "float"
+            ui_type: "esp.ui.slider"
+            properties: ["read"]
+            bounds: {min: -20, max: 60, step: 0.5}
+            default: 22.5
+          - name: "Cool-Temperature"
+            type: "esp.param.setpoint_temperature"
+            data_type: "float"
+            ui_type: "esp.ui.slider"
+            properties: ["read", "write"]
+            bounds: {min: 16, max: 30, step: 0.5}
+            default: 24.0

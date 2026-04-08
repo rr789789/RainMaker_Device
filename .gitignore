@@ -1,0 +1,17 @@
+# Binaries
+rainmaker-device
+rainmaker-device-*
+
+# Data
+data/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config overrides
+config.local.yaml

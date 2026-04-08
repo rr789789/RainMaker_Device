@@ -1,0 +1,112 @@
+name: Build Release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            suffix: linux-amd64
+          - goos: linux
+            goarch: arm64
+            suffix: linux-arm64
+          - goos: windows
+            goarch: amd64
+            suffix: windows-amd64
+          - goos: darwin
+            goarch: amd64
+            suffix: darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            suffix: darwin-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Download dependencies
+        run: go mod tidy
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          BINARY=rainmaker-device-${{ matrix.suffix }}
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BINARY="${BINARY}.exe"
+          fi
+          go build -ldflags="-s -w" -o ${BINARY} .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rainmaker-device-${{ matrix.suffix }}
+          path: rainmaker-device-${{ matrix.suffix }}*
+          retention-days: 30
+
+  release:
+    name: Create Release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate version tag
+        id: version
+        run: |
+          DATE_TAG="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+          echo "tag=$DATE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "RainMaker Device Simulator ${{ steps.version.outputs.tag }}"
+          body: |
+            ## ESP RainMaker Device Simulator
+
+            ### Binaries
+            - `linux-amd64` - Ubuntu/Debian 64-bit
+            - `linux-arm64` - ARM64 (Raspberry Pi)
+            - `windows-amd64` - Windows 64-bit
+            - `darwin-amd64` - macOS Intel
+            - `darwin-arm64` - macOS Apple Silicon
+
+            ### Quick Start
+            ```bash
+            # Edit config.yaml with your server URL and credentials
+            ./rainmaker-device-linux-amd64
+            ```
+          files: |
+            artifacts/rainmaker-device-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
