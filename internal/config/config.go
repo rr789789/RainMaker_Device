@@ -64,6 +64,10 @@ func Load(configPath string) error {
 		viper.AddConfigPath(".")
 	}
 
+	// Set defaults so it works without config file
+	viper.SetDefault("server.url", "http://119.91.101.51:8080")
+	viper.SetDefault("server.email", "test@example.com")
+	viper.SetDefault("server.password", "qwer1234")
 	viper.SetDefault("local.port", 8090)
 
 	if err := viper.ReadInConfig(); err != nil {

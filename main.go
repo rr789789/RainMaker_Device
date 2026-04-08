@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
 	"log"
@@ -16,9 +17,20 @@ import (
 	"rainmaker-device/internal/local"
 )
 
+//go:embed config.yaml
+var defaultConfig []byte
+
 func main() {
 	configPath := flag.String("config", "", "Path to config file")
 	flag.Parse()
+
+	// If no config file, write embedded default to current directory
+	if *configPath == "" {
+		if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
+			os.WriteFile("config.yaml", defaultConfig, 0644)
+			fmt.Println("Created default config.yaml in current directory")
+		}
+	}
 
 	// Load config
 	if err := config.Load(*configPath); err != nil {
