@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"flag"
 	"fmt"
 	"log"
@@ -17,8 +16,38 @@ import (
 	"rainmaker-device/internal/local"
 )
 
-//go:embed config.yaml
-var defaultConfig []byte
+const defaultConfigYAML = `server:
+  url: "http://119.91.101.51:8080"
+  email: "test@example.com"
+  password: "qwer1234"
+
+local:
+  port: 8090
+
+devices:
+  - node_id: "SIM-SWITCH-001"
+    name: "Living Room Switch"
+    type: "esp.device.switch"
+    fw_version: "1.0.0"
+    sub_devices:
+      - name: "Switch"
+        type: "esp.device.switch"
+        primary: "Power"
+        params:
+          - { name: "Power", type: "esp.param.power", data_type: "bool", ui_type: "esp.ui.toggle", properties: ["read", "write"], default: false }
+
+  - node_id: "SIM-LIGHT-002"
+    name: "Bedroom Light"
+    type: "esp.device.lightbulb"
+    fw_version: "1.0.0"
+    sub_devices:
+      - name: "Light"
+        type: "esp.device.lightbulb"
+        primary: "Power"
+        params:
+          - { name: "Power", type: "esp.param.power", data_type: "bool", ui_type: "esp.ui.toggle", properties: ["read", "write"], default: false }
+          - { name: "Brightness", type: "esp.param.brightness", data_type: "int", ui_type: "esp.ui.slider", properties: ["read", "write"], bounds: {min: 0, max: 100, step: 1}, default: 50 }
+`
 
 func main() {
 	configPath := flag.String("config", "", "Path to config file")
@@ -27,7 +56,7 @@ func main() {
 	// If no config file, write embedded default to current directory
 	if *configPath == "" {
 		if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
-			os.WriteFile("config.yaml", defaultConfig, 0644)
+			os.WriteFile("config.yaml", []byte(defaultConfigYAML), 0644)
 			fmt.Println("Created default config.yaml in current directory")
 		}
 	}
