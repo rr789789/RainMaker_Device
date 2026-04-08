@@ -119,9 +119,9 @@ func main() {
 	}
 
 	// Start mDNS for each device
-	mdnsServices := make([]*local.mDNSService, 0, len(devices))
+	mdnsServices := make([]*local.MDNSService, 0, len(devices))
 	for _, d := range devices {
-		svc, err := local.RegistermDNS(d.NodeID, cfg.Local.Port)
+		svc, err := local.RegisterMDNS(d.NodeID, cfg.Local.Port)
 		if err != nil {
 			log.Printf("mDNS registration failed for %s: %v", d.NodeID, err)
 		} else {
